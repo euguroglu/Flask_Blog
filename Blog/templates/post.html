@@ -24,6 +24,7 @@
     </article>
     {% for comment in comment %}
     <article class="media content-section">
+      <img class="rounded-circle article-img" src="{{url_for('static', filename='images/' + comment.author.image_file) }}" alt="">
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{{url_for('user_posts', username=comment.author.username)}}">{{ comment.author.username }}</a>
