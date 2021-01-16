@@ -1,6 +1,6 @@
-from Blog.models import User, Post
+from Blog.models import User, Post, Comment
 from flask import render_template, url_for, flash, redirect, request, abort
-from Blog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+from Blog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm, CommentForm
 from Blog import app, bcrypt, db, mail
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets
@@ -99,10 +99,21 @@ def new_post():
         return redirect(url_for('home'))
     return render_template('create_post.html', form=form, title='New Post', legend='New Post')
 
-@app.route('/post/<int:post_id>')
+@app.route('/post/<int:post_id>', methods=['GET','POST'])
+@login_required
 def post(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template('post.html', post=post)
+
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment_post = Comment(content=form.content.data, entry=post, author=current_user)
+        db.session.add(comment_post)
+        db.session.commit()
+        flash('Your comment has been created!', 'success')
+
+        return redirect(url_for('post',post_id=post.id))
+    comment = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_posted.desc()).all()
+    return render_template('post.html', post=post, form=form, comment=comment)
 
 @app.route('/post/<int:post_id>/update', methods=['GET','POST'])
 @login_required
