@@ -12,12 +12,12 @@ pre[class*="language-"] {
 	background: none;
 	text-shadow: 0 1px white;
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-	font-size: 1em;
+	font-size: 0.85em;
 	text-align: left;
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
-	word-wrap: normal;
+	word-wrap: inherit;
 	line-height: 1.5;
 
 	-moz-tab-size: 4;
@@ -140,7 +140,17 @@ pre[class*="language-"] {
 .token.entity {
 	cursor: help;
 }
-
 .language-python {
-	width:582px;
+	width: 580px; /* your prefered width */
+	overflow-x: scroll;
+	height: 100%;/* Your prfered
+	height:auto;
+}
+
+.code-holder{
+ height*/
+}
+
+.language-python code{
+ white-space: pre; /* this rule is important*/
 }
