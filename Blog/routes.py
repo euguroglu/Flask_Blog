@@ -1,5 +1,5 @@
-from Blog.models import User, Post, Comment
-from flask import render_template, url_for, flash, redirect, request, abort
+from Blog.models import User, Post, Comment, Images
+from flask import render_template, url_for, flash, redirect, request, abort, jsonify
 from Blog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm, CommentForm
 from Blog import app, bcrypt, db, mail
 from flask_login import login_user, current_user, logout_user, login_required
@@ -203,18 +203,52 @@ def error_403(error):
 def error_500(error):
     return render_template('errors/500.html'), 500
 
+# Handles javascript image uploads from tinyMCE
 @app.route('/imageuploader', methods=['POST'])
 @login_required
 def imageuploader():
     file = request.files.get('file')
     if file:
         filename = file.filename.lower()
+        fn, ext = filename.split('.')
+        # truncate filename (excluding extension) to 30 characters
+        fn = fn[:30]
+        filename = fn + '.' + ext
         if ext in ['jpg', 'gif', 'png', 'jpeg']:
-            img_fullpath = os.path.join(app.config['UPLOADED_PATH'], filename)
-            file.save(img_fullpath)
+            try:
+                # everything looks good, save file
+
+                img_fullpath = os.path.join(app.root_path, 'static/images', filename)
+                file.save(img_fullpath)
+                # get the file size to save to db
+                file_size = os.stat(img_fullpath).st_size
+                size = 160, 160
+                # read image into pillow
+                im = Image.open(img_fullpath)
+                # get image dimension to save to db
+                file_width, file_height = im.size
+                # convert to thumbnail
+                im.thumbnail(size)
+                thumbnail = fn + '-thumb.jpg'
+                tmb_fullpath = os.path.join(app.root_path, 'static/images_thumb', thumbnail)
+                # PNG is index while JPG needs RGB
+                if not im.mode == 'RGB':
+                    im = im.convert('RGB')
+                # save thumbnail
+                im.save(tmb_fullpath, "JPEG")
+
+                # save to db
+                img = Images(filename=filename, thumbnail=thumbnail, file_size=file_size, \
+                            file_width=file_width, file_height=file_height)
+                db.session.add(img)
+                db.session.commit()
+            except IOError:
+                output = make_response(404)
+                output.headers['Error'] = 'Cannot create thumbnail for ' + filename
+                return output
             return jsonify({'location' : filename})
 
     # fail, image did not upload
     output = make_response(404)
-    output.headers['Error'] = 'Image failed to upload'
+    output.headers['Error'] = 'Filename needs to be JPG, JPEG, GIF or PNG'
     return output

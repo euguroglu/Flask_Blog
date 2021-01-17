@@ -53,3 +53,11 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f"User('{self.content}','{self.date_posted}')"
+
+class Images(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(30), nullable=False)
+    thumbnail = db.Column(db.String(30), nullable=False)
+    file_size = db.Column(db.String(30), nullable=False)
+    file_width = db.Column(db.String(30), nullable=False)
+    file_height = db.Column(db.String(30), nullable=False)

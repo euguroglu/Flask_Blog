@@ -16,7 +16,7 @@
           {% endif %}
         </div>
         <h2 class="article-title">{{ post.title }}</h2>
-        <p class="article-content">{{ post.content }}</p>
+        <p class="article-content">{{ post.content|safe }}</p>
         <!-- {% if post.comment %} -->
 
         <!-- {% endif %} -->
@@ -49,7 +49,7 @@
                     {% endfor %}
                   </div>
                 {% else %}
-                  {{ form.content(class="form-control form-control-lg") }}
+                  {{ form.content(class="form-control form-control-lg")}}
                 {% endif %}
              </div>
 
